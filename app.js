@@ -4,12 +4,30 @@ const WebSocketServer = require('ws');
 // Creating a new websocket server
 const wss = new WebSocketServer.Server({ port: 8080 })
 
+var id = 0;
+var lookup = {};
+
 // Creating connection using websocket
 wss.on("connection", ws => {
+
+    ws.id = id++;
+    lookup[ws.id] = ws;
+
+    function send(message) {
+        ws.send(message);
+        // wss.clients.forEach(client => client.send(message));
+    }
+
+    function sendToClient(message, clientId) {
+        clientWs = lookup[clientId];
+        clientWs.send(message.toString());
+        // wss.clients.forEach(client => client.send(message));
+    }
+
     console.log("new client connected");
 
     // sending message to client
-    ws.send('Welcome, you are connected!');
+    send('Welcome, you are connected!!!!!!');
 
     //on message from client
     ws.on("message", data => {
@@ -20,12 +38,13 @@ wss.on("connection", ws => {
         } else if (data == 'stop') {
             clearInterval(myVar);
         } else {
-            ws.send(`Unknown command: ${data}`);
+            sendToClient(data, 0);
+            // send(`Unknown command: ${data}`);
         }
     });
 
     function timer() {
-        ws.send(getTimestampInSeconds());
+        send(getTimestampInSeconds());
     }
 
     function getTimestampInSeconds () {
