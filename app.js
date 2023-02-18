@@ -15,13 +15,15 @@ wss.on("connection", ws => {
 
     function send(message) {
         ws.send(message);
-        // wss.clients.forEach(client => client.send(message));
+    }
+
+    function sendAll(message) {
+        wss.clients.forEach(client => client.send(message.toString()));
     }
 
     function sendToClient(message, clientId) {
         clientWs = lookup[clientId];
         clientWs.send(message.toString());
-        // wss.clients.forEach(client => client.send(message));
     }
 
     console.log("new client connected");
@@ -38,13 +40,14 @@ wss.on("connection", ws => {
         } else if (data == 'stop') {
             clearInterval(myVar);
         } else {
-            sendToClient(data, 0);
-            // send(`Unknown command: ${data}`);
+            // send(data);
+            // sendToClient(data, 0);
+            sendAll(`Unknown command: ${data}`);
         }
     });
 
     function timer() {
-        send(getTimestampInSeconds());
+        sendAll(getTimestampInSeconds());
     }
 
     function getTimestampInSeconds () {
