@@ -9,6 +9,9 @@
 
 <input type="text" id="messageId"/>
 <button type="button" onclick="sendToServer()">Submit</button>
+<div>
+    <textarea id="myTextarea" style="width: 300px; height: 500px"></textarea>
+</div>
 
 <script>
     const ws = new WebSocket("ws://localhost:8080");
@@ -24,6 +27,8 @@
 
     ws.addEventListener('message', function (event) {
         console.log(event.data);
+        let textArea = document.getElementById('myTextarea');
+        textArea.value += "\n" + event.data;
     });
 </script>
 </body>
