@@ -12,7 +12,7 @@ const chatMessages = [];
 const namePrefix = ["cheerful", "sad", "happy", "miserable", "tall", "short", "thin", "fat"];
 const nameSuffix = ["monkey", "giraffe", "rabbit", "lion", "cat", "dog", "horse", "bear"];
 
-const MAX_COUNT_OF_CHAT_MESSAGES = 5;
+const MAX_COUNT_OF_CHAT_MESSAGES = 20;
 const ACTION_OUT_PLAYERS_UPDATED = "ACTION_OUT_PLAYERS_UPDATED";
 const ACTION_IN_SET_NAME = "ACTION_IN_SET_NAME";
 const ACTION_IN_NEW_CHAT_MESSAGE = "ACTION_IN_NEW_CHAT_MESSAGE";
