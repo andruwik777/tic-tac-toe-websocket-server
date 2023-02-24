@@ -7,20 +7,27 @@ const wss = new WebSocketServer.Server({ port: 8080 })
 var clientId = 0;
 var lookup = []
 var uniqueMessageId = 0;
+const chatMessages = [];
 
+const namePrefix = ["cheerful", "sad", "happy", "miserable", "tall", "short", "thin", "fat"];
+const nameSuffix = ["monkey", "giraffe", "rabbit", "lion", "cat", "dog", "horse", "bear"];
+
+const MAX_COUNT_OF_CHAT_MESSAGES = 5;
 const ACTION_OUT_PLAYERS_UPDATED = "ACTION_OUT_PLAYERS_UPDATED";
 const ACTION_IN_SET_NAME = "ACTION_IN_SET_NAME";
 const ACTION_IN_NEW_CHAT_MESSAGE = "ACTION_IN_NEW_CHAT_MESSAGE";
 const ACTION_OUT_NEW_CHAT_MESSAGE = "ACTION_OUT_NEW_CHAT_MESSAGE";
-const ACTION_OUT_SET_PLAYER_ID = "ACTION_OUT_SET_PLAYER_ID";
+const ACTION_OUT_SET_INITIAL_INFO = "ACTION_OUT_SET_INITIAL_INFO";
 
 wss.on("connection", ws => {
 // Creating connection using websocket
 
     ws.id = clientId++;
     lookup.push(ws);
-
     console.log("the client has connected: " + ws.id + ", connections: " + lookup.map(ws => ws.id + ":" + ws.playerName));
+    const generatedPlayerName = namePrefix[Math.floor(Math.random() * namePrefix.length)] + "_" + nameSuffix[Math.floor(Math.random() * nameSuffix.length)] + "_" + ws.id;
+    sendInitialInfo(generatedPlayerName);
+    sendUpdatedPlayers();
 
     function send(message) {
         ws.send(JSON.stringify(message));
@@ -41,19 +48,27 @@ wss.on("connection", ws => {
         sendAll({action: ACTION_OUT_PLAYERS_UPDATED, data: players});
     }
 
+    function sendInitialInfo(playerName) {
+        ws.playerName = playerName;
+        send({action: ACTION_OUT_SET_INITIAL_INFO, data: {id : ws.id, name : ws.playerName, messages: chatMessages}});
+    }
+
     function processIncomingData(clientId, data) {
         console.log("Client has sent us: " + JSON.stringify(data));
 
         switch(data.action) {
             case ACTION_IN_SET_NAME:
-                const playerName = data.data;
-                ws.playerName = playerName;
-                send({action: ACTION_OUT_SET_PLAYER_ID, data: ws.id });
-                sendUpdatedPlayers();
+                // TODO: other implementation need to not duplicate data
+                // changePlayerName(data.data);
                 break;
             case ACTION_IN_NEW_CHAT_MESSAGE:
                 const newChatMessageText = data.data;
                 const newChatMessage = {id: uniqueMessageId++, playerId: ws.id, playerName: ws.playerName, chatMessageText: newChatMessageText};
+                chatMessages.unshift(newChatMessage);
+                if(chatMessages.length > MAX_COUNT_OF_CHAT_MESSAGES) {
+                    chatMessages.splice(MAX_COUNT_OF_CHAT_MESSAGES,1);
+                }
+
                 sendAll({action: ACTION_OUT_NEW_CHAT_MESSAGE, data: newChatMessage})
                 break;
             default:
