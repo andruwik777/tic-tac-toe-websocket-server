@@ -20,7 +20,7 @@ wss.on("connection", ws => {
     ws.id = clientId++;
     lookup.push(ws);
 
-    console.log("the client has connected: " + ws.id + ", connections: " + lookup.map(ws => ws.id));
+    console.log("the client has connected: " + ws.id + ", connections: " + lookup.map(ws => ws.id + ":" + ws.playerName));
 
     function send(message) {
         ws.send(JSON.stringify(message));
@@ -37,7 +37,7 @@ wss.on("connection", ws => {
     }
 
     function sendUpdatedPlayers() {
-        const players = lookup.map(ws => ({playerId: ws.id, playerName: ws.playerName}));
+        const players = lookup.filter(ws => ws.playerName !== undefined).map(ws => ({playerId: ws.id, playerName: ws.playerName}));
         sendAll({action: ACTION_OUT_PLAYERS_UPDATED, data: players});
     }
 
